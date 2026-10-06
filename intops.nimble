@@ -10,7 +10,7 @@ srcDir = "src"
 
 # Dependencies
 
-requires "nim >= 1.6.16", "unittest2 >= 0.2.5"
+requires "nim >= 1.6.16", "unittest2 >= 0.3.0"
 
 import std/[os, sequtils, strformat, parseopt, json]
 
@@ -45,16 +45,10 @@ proc run(args, path: string) =
 task test, "Run tests":
   for args in testArguments:
     run args & " --mm:refc", "tests/tintops"
-    if (NimMajor, NimMinor) > (1, 6):
-      run args & " --mm:orc", "tests/tintops"
+    run args & " --mm:orc", "tests/tintops"
 
 task test_asan, "Run tests with ASAN":
-  if platform != "x86" and (NimMajor, NimMinor) >= (2, 2):
-    try:
-      exec "echo '#if __clang_major__ < 20\n#error\n#endif' | clang -E - >/dev/null"
-    except OSError:
-      return
-
+  if platform != "x86":
     # https://clang.llvm.org/docs/AddressSanitizer.html
     putEnv("ASAN_OPTIONS", "detect_leaks=0:detect_stack_use_after_return=1")
     # https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
